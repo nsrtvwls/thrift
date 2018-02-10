@@ -33,9 +33,31 @@
  */
 class t_function : public t_doc {
 public:
+    t_function(t_type* returntype,
+               std::string name,
+               std::string substitute,
+               t_struct* arglist,
+               t_struct* xceptions,
+               bool oneway = false)
+    : returntype_(returntype),
+      name_(name),
+      substitute_(substitute),
+      arglist_(arglist),
+      xceptions_(new t_struct(NULL)),
+      own_xceptions_(true),
+      oneway_(oneway) {
+      if (oneway_ && !xceptions_->get_members().empty()) {
+        throw std::string("Oneway methods can't throw exceptions.");
+      }
+      if (oneway_ && (!returntype_->is_void())) {
+        pwarning(1, "Oneway methods should return void.\n");
+      }
+  }
+
   t_function(t_type* returntype, std::string name, t_struct* arglist, bool oneway = false)
     : returntype_(returntype),
       name_(name),
+      substitute_(name),
       arglist_(arglist),
       xceptions_(new t_struct(NULL)),
       own_xceptions_(true),
@@ -52,6 +74,7 @@ public:
              bool oneway = false)
     : returntype_(returntype),
       name_(name),
+      substitute_(name),
       arglist_(arglist),
       xceptions_(xceptions),
       own_xceptions_(false),
@@ -73,6 +96,8 @@ public:
 
   const std::string& get_name() const { return name_; }
 
+  const std::string& get_substitute() const { return substitute_; }
+
   t_struct* get_arglist() const { return arglist_; }
 
   t_struct* get_xceptions() const { return xceptions_; }
@@ -84,6 +109,7 @@ public:
 private:
   t_type* returntype_;
   std::string name_;
+  std::string substitute_;
   t_struct* arglist_;
   t_struct* xceptions_;
   bool own_xceptions_;

@@ -105,6 +105,7 @@ const int struct_is_union = 1;
  * Strings identifier
  */
 %token<id>     tok_identifier
+%token<id>     tok_keyword
 %token<id>     tok_literal
 %token<dtext>  tok_doctext
 
@@ -801,6 +802,21 @@ Function:
       validate_simple_identifier( $4);
       $6->set_name(std::string($4) + "_args");
       $$ = new t_function($3, $4, $6, $8, $2);
+      if ($1 != NULL) {
+        $$->set_doc($1);
+      }
+      if ($9 != NULL) {
+        $$->annotations_ = $9->annotations_;
+        delete $9;
+      }
+    }
+|
+  CaptureDocText Oneway FunctionType tok_keyword '(' FieldList ')' Throws TypeAnnotations CommaOrSemicolonOptional
+    {
+      std::string substitute = strcat(strdup($4), "_");
+      validate_simple_identifier( substitute.c_str());
+      $6->set_name(std::string($4) + "_args");
+      $$ = new t_function($3, $4, substitute, $6, $8, $2);
       if ($1 != NULL) {
         $$->set_doc($1);
       }

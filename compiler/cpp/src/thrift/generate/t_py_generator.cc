@@ -241,7 +241,7 @@ public:
   std::string declare_argument(t_field* tfield);
   std::string render_field_default_value(t_field* tfield);
   std::string type_name(t_type* ttype);
-  std::string function_signature(t_function* tfunction, bool interface = false);
+  std::string function_signature(t_function* tfunction, bool interface = false, bool substitute = false);
   std::string argument_list(t_struct* tstruct,
                             std::vector<std::string>* pre = NULL,
                             std::vector<std::string>* post = NULL);
@@ -1204,7 +1204,7 @@ void t_py_generator::generate_service_interface(t_service* tservice) {
       } else {
         f_service_ << endl;
       }
-      f_service_ << indent() << "def " << function_signature(*f_iter, true) << ":" << endl;
+      f_service_ << indent() << "def " << function_signature(*f_iter, true, true) << ":" << endl;
       indent_up();
       generate_python_docstring(f_service_, (*f_iter));
       f_service_ << indent() << "pass" << endl;
@@ -1336,7 +1336,7 @@ void t_py_generator::generate_service_client(t_service* tservice) {
 
     f_service_ << endl;
     // Open function
-    indent(f_service_) << "def " << function_signature(*f_iter, false) << ":" << endl;
+    indent(f_service_) << "def " << function_signature(*f_iter, false, true) << ":" << endl;
     indent_up();
     generate_python_docstring(f_service_, (*f_iter));
     if (gen_twisted_) {
@@ -2577,10 +2577,10 @@ string t_py_generator::render_field_default_value(t_field* tfield) {
  * @param tfunction Function definition
  * @return String of rendered function definition
  */
-string t_py_generator::function_signature(t_function* tfunction, bool interface) {
+string t_py_generator::function_signature(t_function* tfunction, bool interface, bool substitute) {
   vector<string> pre;
   vector<string> post;
-  string signature = tfunction->get_name() + "(";
+  string signature = (substitute ? tfunction->get_substitute() : tfunction->get_name()) + "(";
 
   if (!(gen_zope_interface_ && interface)) {
     pre.push_back("self");
